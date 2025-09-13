@@ -19,7 +19,7 @@ export type FormState = {
 }
 
 export async function createFarm(prevState: FormState, formData: FormData): Promise<FormState> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
@@ -60,4 +60,157 @@ export async function createFarm(prevState: FormState, formData: FormData): Prom
 
   revalidatePath('/dashboard')
   redirect('/dashboard')
+}
+
+export async function getUserFarms() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from('farms')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Database Error:', error)
+    return []
+  }
+
+  return data || []
+}
+
+export async function getFarm(farmId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return null
+  }
+
+  const { data, error } = await supabase
+    .from('farms')
+    .select('*')
+    .eq('id', farmId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (error) {
+    console.error('Database Error:', error)
+    return null
+  }
+
+  return data
+}
+
+export async function updateFarm(farmId: string, updates: Partial<{
+  farm_name: string
+  location: { district: string; village: string; coordinates?: { lat: number; lng: number } }
+  land_size_acres: number
+  soil_type: string
+  irrigation_type: string
+  primary_crops: string[]
+}>) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+
+  // First check if farm exists and belongs to user
+  const { data: existingFarm, error: fetchError } = await supabase
+    .from('farms')
+    .select('*')
+    .eq('id', farmId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (fetchError || !existingFarm) {
+    throw new Error('Farm not found or access denied')
+  }
+
+  // Remove undefined values
+  const cleanUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([, value]) => value !== undefined)
+  )
+
+  const { error } = await supabase
+    .from('farms')
+    .update(cleanUpdates)
+    .eq('id', farmId)
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Database Error:', error)
+    throw new Error('Failed to update farm')
+  }
+
+  revalidatePath('/dashboard')
+  return farmId
+}
+
+export async function getFarmStats(farmId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return null
+  }
+
+  // Check if farm belongs to user
+  const { data: farm, error: farmError } = await supabase
+    .from('farms')
+    .select('*')
+    .eq('id', farmId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (farmError || !farm) {
+    return null
+  }
+
+  // Get recent activities count
+  const { data: activities, error: activitiesError } = await supabase
+    .from('activities')
+    .select('*')
+    .eq('farm_id', farmId)
+
+  if (activitiesError) {
+    console.error('Activities Error:', activitiesError)
+  }
+
+  // Get total expenses this month
+  const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
+  const { data: expenses, error: expensesError } = await supabase
+    .from('expenses')
+    .select('*')
+    .eq('farm_id', farmId)
+    .gte('date', `${currentMonth}-01`)
+
+  if (expensesError) {
+    console.error('Expenses Error:', expensesError)
+  }
+
+  const totalExpenses = expenses?.reduce((sum, expense) => sum + (expense.cost || 0), 0) || 0
+
+  // Get crop health records
+  const { data: healthRecords, error: healthError } = await supabase
+    .from('crop_health_records')
+    .select('*')
+    .eq('farm_id', farmId)
+
+  if (healthError) {
+    console.error('Health Records Error:', healthError)
+  }
+
+  return {
+    totalActivities: activities?.length || 0,
+    monthlyExpenses: totalExpenses,
+    healthRecords: healthRecords?.length || 0,
+    recentActivities: activities?.slice(-5) || [],
+  }
 }
