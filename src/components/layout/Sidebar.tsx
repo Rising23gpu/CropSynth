@@ -2,15 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bot, Sun, DollarSign, Activity, Award, BarChart2, Leaf } from 'lucide-react'
+import { Bot, Sun, DollarSign, Activity, Award, Home, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: BarChart2 },
+  { href: '/dashboard', label: 'Overview', icon: Home },
   { href: '/crop-bot', label: 'Crop-Bot', icon: Bot },
-  { href: '/crop-doctor', label: 'Crop Doctor', icon: Leaf },
+  { href: '/crop-doctor', label: 'Crop Doctor', icon: Search },
   { href: '/weather', label: 'Weather', icon: Sun },
-  { href: '/finance', label: 'Finance', icon: DollarSign },
+  { href: '/expenses', label: 'Expenses', icon: DollarSign },
   { href: '/activities', label: 'Activities', icon: Activity },
   { href: '/schemes', label: 'Schemes', icon: Award },
 ]

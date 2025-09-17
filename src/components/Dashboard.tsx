@@ -1,12 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createClient } from '@/lib/supabase/client'
 import { getFarmStats } from "../app/actions/farm";
-import { ChatBot } from "./ChatBot";
-import { WeatherDashboard } from "./WeatherDashboard";
-import { ActivityLogger } from "./ActivityLogger";
-import { ExpenseTracker } from "./ExpenseTracker";
-import { CropDoctor } from "./CropDoctor";
 import { FarmOverview } from "./FarmOverview";
 
 interface DashboardProps {
@@ -29,10 +25,7 @@ interface DashboardProps {
   };
 }
 
-type TabType = "overview" | "chat" | "weather" | "activities" | "expenses" | "health";
-
 export function Dashboard({ farms, user }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [selectedFarmId, setSelectedFarmId] = useState<string>(farms.length > 0 ? farms[0].id : "");
   const [farmStats, setFarmStats] = useState<{
     totalActivities: number;
@@ -46,8 +39,22 @@ export function Dashboard({ farms, user }: DashboardProps) {
     }>;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [farmsData, setFarmsData] = useState(farms);
 
-  const selectedFarm = farms.find(farm => farm.id === selectedFarmId);
+  const supabase = createClient()
+  const selectedFarm = farmsData.find(farm => farm.id === selectedFarmId);
+
+  const refreshFarmData = async () => {
+    // Refresh farms data from server
+    const { data: updatedFarms, error } = await supabase
+      .from('farms')
+      .select('*')
+      .eq('user_id', user.id)
+
+    if (!error && updatedFarms) {
+      setFarmsData(updatedFarms)
+    }
+  }
 
   useEffect(() => {
     const fetchFarmStats = async () => {
@@ -69,15 +76,6 @@ export function Dashboard({ farms, user }: DashboardProps) {
 
     fetchFarmStats();
   }, [selectedFarmId, selectedFarm]);
-
-  const tabs = [
-    { id: "overview", label: "Overview", icon: "🏠" },
-    { id: "chat", label: "Crop-Bot", icon: "🤖" },
-    { id: "weather", label: "Weather", icon: "🌤️" },
-    { id: "activities", label: "Activities", icon: "📝" },
-    { id: "expenses", label: "Expenses", icon: "💰" },
-    { id: "health", label: "Crop Doctor", icon: "🔍" },
-  ];
 
   return (
     <div className="space-y-6">
@@ -142,61 +140,19 @@ export function Dashboard({ farms, user }: DashboardProps) {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap flex items-center space-x-2 ${
-                  activeTab === tab.id
-                    ? "border-green-500 text-green-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div className="p-6">
-          {activeTab === "overview" && selectedFarm && (
-            <FarmOverview
-              farm={{
-                ...selectedFarm,
-                soil_type: selectedFarm.soil_type || 'Unknown',
-                irrigation_type: selectedFarm.irrigation_type || 'Unknown'
-              }}
-              stats={farmStats || { totalActivities: 0, monthlyExpenses: 0, healthRecords: 0, recentActivities: [] }}
-            />
-          )}
-          {activeTab === "chat" && (
-            <ChatBot farmId={selectedFarmId} />
-          )}
-          {activeTab === "weather" && selectedFarm && (
-            <WeatherDashboard
-              farm={{
-                ...selectedFarm,
-                soil_type: selectedFarm.soil_type || 'Unknown',
-                irrigation_type: selectedFarm.irrigation_type || 'Unknown'
-              }}
-            />
-          )}
-          {activeTab === "activities" && (
-            <ActivityLogger farmId={selectedFarmId} />
-          )}
-          {activeTab === "expenses" && (
-            <ExpenseTracker farmId={selectedFarmId} />
-          )}
-          {activeTab === "health" && (
-            <CropDoctor farmId={selectedFarmId} />
-          )}
-        </div>
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        {selectedFarm && (
+          <FarmOverview
+            farm={{
+              ...selectedFarm,
+              soil_type: selectedFarm.soil_type || 'Unknown',
+              irrigation_type: selectedFarm.irrigation_type || 'Unknown'
+            }}
+            stats={farmStats || { totalActivities: 0, monthlyExpenses: 0, healthRecords: 0, recentActivities: [] }}
+            onFarmUpdate={refreshFarmData}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getFarmActivities } from "../app/actions/activities";
 import { getFinancialSummary } from "../app/actions/expenses";
+import { EditFarmForm } from "./EditFarmForm";
 
 interface FarmOverviewProps {
   farm: {
@@ -26,9 +27,10 @@ interface FarmOverviewProps {
       date: string;
     }>;
   };
+  onFarmUpdate?: () => void;
 }
 
-export function FarmOverview({ farm, stats }: FarmOverviewProps) {
+export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
   const [recentActivities, setRecentActivities] = useState<Array<{
     id: string;
     activity_type: string;
@@ -73,7 +75,31 @@ export function FarmOverview({ farm, stats }: FarmOverviewProps) {
     <div className="space-y-6">
       {/* Farm Details Card */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Farm Details</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-900">Farm Details</h3>
+          <EditFarmForm
+            farm={farm}
+            onUpdate={() => {
+              onFarmUpdate?.()
+              // Also refresh local data
+              const fetchData = async () => {
+                if (farm?.id) {
+                  try {
+                    const [activities, finances] = await Promise.all([
+                      getFarmActivities(farm.id, 5),
+                      getFinancialSummary(farm.id)
+                    ]);
+                    setRecentActivities(activities);
+                    setFinancialSummary(finances);
+                  } catch (error) {
+                    console.error('Failed to fetch farm overview data:', error);
+                  }
+                }
+              };
+              fetchData();
+            }}
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="text-sm text-gray-500">Location</div>

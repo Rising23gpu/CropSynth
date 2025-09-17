@@ -1,6 +1,7 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { createFarm, type FormState } from '@/app/actions/farm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,7 +27,7 @@ function SubmitButton() {
 
 export default function CreateFarmPage() {
   const initialState: FormState = { message: '', errors: {} }
-  const [state, dispatch] = useFormState(createFarm, initialState)
+  const [state, dispatch] = useActionState(createFarm, initialState)
 
   return (
     <div className="max-w-2xl mx-auto">
