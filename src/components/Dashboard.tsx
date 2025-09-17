@@ -5,6 +5,7 @@ import { getFarmStats } from "../app/actions/farm";
 import { FarmOverview } from "./FarmOverview";
 import { EditFarmForm } from "./EditFarmForm";
 import { useFarm } from "./FarmContext";
+import TranslatableText from "./TranslatableText";
 
 interface DashboardProps {
   user: {
@@ -61,8 +62,8 @@ export function Dashboard({ user }: DashboardProps) {
   if (farms.length === 0) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to CropSynth!</h2>
-        <p className="text-gray-600 mb-6">Get started by creating your first farm.</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4"><TranslatableText text="Welcome to CropSynth!" /></h2>
+        <p className="text-gray-600 mb-6"><TranslatableText text="Get started by creating your first farm." /></p>
         <a
           href="/farm/create"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
@@ -79,7 +80,7 @@ export function Dashboard({ user }: DashboardProps) {
       {farms.length > 1 && (
         <div className="bg-white rounded-lg shadow-sm border p-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Farm
+            <TranslatableText text="Select Farm" />
           </label>
           <select
             value={selectedFarmId || ''}
@@ -101,10 +102,10 @@ export function Dashboard({ user }: DashboardProps) {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-2xl font-bold mb-2">
-              Welcome back, {user?.name || user?.email?.split('@')[0] || 'Farmer'}! 👋
+              <TranslatableText text="Welcome back" />, {user?.name || user?.email?.split('@')[0] || 'Farmer'}! 👋
             </h2>
             <p className="text-green-100">
-              Managing <strong>{selectedFarm?.farm_name || 'No Farm Selected'}</strong> in {selectedFarm?.location?.village || 'Unknown'}, {selectedFarm?.location?.district || 'Unknown'}
+              <TranslatableText text="Managing" /> <strong>{selectedFarm?.farm_name || 'No Farm Selected'}</strong> <TranslatableText text="in" /> {selectedFarm?.location?.village || 'Unknown'}, {selectedFarm?.location?.district || 'Unknown'}
             </p>
           </div>
           {selectedFarm && (
@@ -124,15 +125,15 @@ export function Dashboard({ user }: DashboardProps) {
         </div>
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="bg-white/20 rounded-lg p-3">
-            <div className="font-semibold">Farm Size</div>
+            <div className="font-semibold"><TranslatableText text="Farm Size" /></div>
             <div className="text-lg">{selectedFarm?.land_size_acres || 0} acres</div>
           </div>
           <div className="bg-white/20 rounded-lg p-3">
-            <div className="font-semibold">Primary Crops</div>
+            <div className="font-semibold"><TranslatableText text="Primary Crops" /></div>
             <div className="text-lg">{selectedFarm?.primary_crops?.length || 0}</div>
           </div>
           <div className="bg-white/20 rounded-lg p-3">
-            <div className="font-semibold">Activities</div>
+            <div className="font-semibold"><TranslatableText text="Activities" /></div>
             <div className="text-lg">
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -142,7 +143,7 @@ export function Dashboard({ user }: DashboardProps) {
             </div>
           </div>
           <div className="bg-white/20 rounded-lg p-3">
-            <div className="font-semibold">This Month</div>
+            <div className="font-semibold"><TranslatableText text="This Month" /></div>
             <div className="text-lg">
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

@@ -1,6 +1,9 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { getFarmActivities } from "../app/actions/activities";
 import { getFinancialSummary } from "../app/actions/expenses";
+import TranslatableText from "./TranslatableText";
 
 interface FarmOverviewProps {
   farm: {
@@ -67,7 +70,7 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
   }, [farm?.id]);
 
   if (!farm) {
-    return <div>Loading farm details...</div>;
+    return <div><TranslatableText text="Loading farm details..." /></div>;
   }
 
   return (
@@ -75,29 +78,29 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
       {/* Farm Details Card */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-900">Farm Details</h3>
+          <h3 className="text-xl font-bold text-gray-900"><TranslatableText text="Farm Details" /></h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="text-sm text-gray-500">Location</div>
+            <div className="text-sm text-gray-500"><TranslatableText text="Location" /></div>
             <div className="font-semibold text-gray-900">
-              {farm.location ? `${farm.location.village}, ${farm.location.district}` : 'Location not set'}
+              {farm.location ? `${farm.location.village}, ${farm.location.district}` : <TranslatableText text="Location not set" />}
             </div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="text-sm text-gray-500">Land Size</div>
+            <div className="text-sm text-gray-500"><TranslatableText text="Land Size" /></div>
             <div className="font-semibold text-gray-900">{farm.land_size_acres} acres</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="text-sm text-gray-500">Soil Type</div>
+            <div className="text-sm text-gray-500"><TranslatableText text="Soil Type" /></div>
             <div className="font-semibold text-gray-900">{farm.soil_type}</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="text-sm text-gray-500">Irrigation</div>
+            <div className="text-sm text-gray-500"><TranslatableText text="Irrigation" /></div>
             <div className="font-semibold text-gray-900">{farm.irrigation_type}</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm md:col-span-2">
-            <div className="text-sm text-gray-500">Primary Crops</div>
+            <div className="text-sm text-gray-500"><TranslatableText text="Primary Crops" /></div>
             <div className="font-semibold text-gray-900">
               {farm.primary_crops.join(", ")}
             </div>
@@ -110,7 +113,7 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
         <div className="bg-white rounded-lg p-6 shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Total Activities</p>
+              <p className="text-sm text-gray-500"><TranslatableText text="Total Activities" /></p>
               <p className="text-2xl font-bold text-gray-900">{stats?.totalActivities || 0}</p>
             </div>
             <div className="text-3xl">📝</div>
@@ -120,7 +123,7 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
         <div className="bg-white rounded-lg p-6 shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Monthly Expenses</p>
+              <p className="text-sm text-gray-500"><TranslatableText text="Monthly Expenses" /></p>
               <p className="text-2xl font-bold text-gray-900">₹{stats?.monthlyExpenses || 0}</p>
             </div>
             <div className="text-3xl">💰</div>
@@ -130,7 +133,7 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
         <div className="bg-white rounded-lg p-6 shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Health Records</p>
+              <p className="text-sm text-gray-500"><TranslatableText text="Health Records" /></p>
               <p className="text-2xl font-bold text-gray-900">{stats?.healthRecords || 0}</p>
             </div>
             <div className="text-3xl">🔍</div>
@@ -140,7 +143,7 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
         <div className="bg-white rounded-lg p-6 shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Net Profit</p>
+              <p className="text-sm text-gray-500"><TranslatableText text="Net Profit" /></p>
               <p className={`text-2xl font-bold ${
                 (financialSummary?.netProfit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
               }`}>
@@ -155,7 +158,7 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
       {/* Recent Activities */}
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-6 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Activities</h3>
+          <h3 className="text-lg font-semibold text-gray-900"><TranslatableText text="Recent Activities" /></h3>
         </div>
         <div className="p-6">
           {recentActivities && recentActivities.length > 0 ? (
@@ -191,9 +194,9 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
           ) : (
             <div className="text-center py-8">
               <div className="text-4xl mb-4">📝</div>
-              <p className="text-gray-500">No activities recorded yet.</p>
+              <p className="text-gray-500"><TranslatableText text="No activities recorded yet." /></p>
               <p className="text-sm text-gray-400 mt-2">
-                Start logging your farming activities to track your progress!
+                <TranslatableText text="Start logging your farming activities to track your progress!" />
               </p>
             </div>
           )}
@@ -204,20 +207,20 @@ export function FarmOverview({ farm, stats, onFarmUpdate }: FarmOverviewProps) {
       {financialSummary && (
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="p-6 border-b">
-            <h3 className="text-lg font-semibold text-gray-900">Financial Summary</h3>
+            <h3 className="text-lg font-semibold text-gray-900"><TranslatableText text="Financial Summary" /></h3>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <p className="text-sm text-gray-500">Total Expenses</p>
+                <p className="text-sm text-gray-500"><TranslatableText text="Total Expenses" /></p>
                 <p className="text-2xl font-bold text-red-600">₹{financialSummary.totalExpenses}</p>
               </div>
               <div className="text-center">
-                <p className="text-sm text-gray-500">Total Revenue</p>
+                <p className="text-sm text-gray-500"><TranslatableText text="Total Revenue" /></p>
                 <p className="text-2xl font-bold text-green-600">₹{financialSummary.totalRevenue}</p>
               </div>
               <div className="text-center">
-                <p className="text-sm text-gray-500">Profit Margin</p>
+                <p className="text-sm text-gray-500"><TranslatableText text="Profit Margin" /></p>
                 <p className={`text-2xl font-bold ${
                   financialSummary.profitMargin >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}>

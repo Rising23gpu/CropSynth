@@ -2,6 +2,7 @@
 
 import { WeatherDashboard } from '@/components/WeatherDashboard'
 import { useFarm } from '@/components/FarmContext'
+import TranslatableText from '@/components/TranslatableText'
 
 export default function WeatherClient() {
   const { farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading } = useFarm()
@@ -17,13 +18,13 @@ export default function WeatherClient() {
   if (farms.length === 0) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">No Farms Found</h2>
-        <p className="text-gray-600 mb-6">You need to create a farm first to view weather information.</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4"><TranslatableText text="No Farms Found" /></h2>
+        <p className="text-gray-600 mb-6"><TranslatableText text="You need to create a farm first to view weather information." /></p>
         <a
           href="/farm/create"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
         >
-          Create Your First Farm
+          <TranslatableText text="Create Your First Farm" />
         </a>
       </div>
     );
@@ -32,8 +33,8 @@ export default function WeatherClient() {
   if (!selectedFarm) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">No Farm Selected</h2>
-        <p className="text-gray-600">Please select a farm to view weather information.</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4"><TranslatableText text="No Farm Selected" /></h2>
+        <p className="text-gray-600"><TranslatableText text="Please select a farm to view weather information." /></p>
       </div>
     );
   }
@@ -45,7 +46,7 @@ export default function WeatherClient() {
         {farms.length > 1 && (
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Farm
+              <TranslatableText text="Select Farm" />
             </label>
             <select
               value={selectedFarmId || ''}
