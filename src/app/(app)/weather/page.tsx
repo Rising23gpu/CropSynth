@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Dashboard } from '@/components/Dashboard'
+import WeatherClient from './WeatherClient'
 
-export default async function DashboardPage() {
+export default async function WeatherPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -10,9 +10,5 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <Dashboard user={user} />
-    </div>
-  )
+  return <WeatherClient />
 }

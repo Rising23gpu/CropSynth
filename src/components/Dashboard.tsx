@@ -2,26 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { getFarmStats } from "../app/actions/farm";
-import { ChatBot } from "./ChatBot";
-import { WeatherDashboard } from "./WeatherDashboard";
-import { ActivityLogger } from "./ActivityLogger";
-import { ExpenseTracker } from "./ExpenseTracker";
-import { CropDoctor } from "./CropDoctor";
 import { FarmOverview } from "./FarmOverview";
+import { EditFarmForm } from "./EditFarmForm";
+import { useFarm } from "./FarmContext";
 
 interface DashboardProps {
-  farms: Array<{
-    id: string;
-    farm_name: string;
-    location: {
-      village: string;
-      district: string;
-    };
-    land_size_acres: number;
-    soil_type?: string;
-    irrigation_type?: string;
-    primary_crops: string[];
-  }>;
   user: {
     id: string;
     email?: string;
@@ -29,11 +14,8 @@ interface DashboardProps {
   };
 }
 
-type TabType = "overview" | "chat" | "weather" | "activities" | "expenses" | "health";
-
-export function Dashboard({ farms, user }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("overview");
-  const [selectedFarmId, setSelectedFarmId] = useState<string>(farms.length > 0 ? farms[0].id : "");
+export function Dashboard({ user }: DashboardProps) {
+  const { farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading: farmsLoading, refreshFarms } = useFarm()
   const [farmStats, setFarmStats] = useState<{
     totalActivities: number;
     monthlyExpenses: number;
@@ -46,8 +28,6 @@ export function Dashboard({ farms, user }: DashboardProps) {
     }>;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const selectedFarm = farms.find(farm => farm.id === selectedFarmId);
 
   useEffect(() => {
     const fetchFarmStats = async () => {
@@ -70,14 +50,28 @@ export function Dashboard({ farms, user }: DashboardProps) {
     fetchFarmStats();
   }, [selectedFarmId, selectedFarm]);
 
-  const tabs = [
-    { id: "overview", label: "Overview", icon: "🏠" },
-    { id: "chat", label: "Crop-Bot", icon: "🤖" },
-    { id: "weather", label: "Weather", icon: "🌤️" },
-    { id: "activities", label: "Activities", icon: "📝" },
-    { id: "expenses", label: "Expenses", icon: "💰" },
-    { id: "health", label: "Crop Doctor", icon: "🔍" },
-  ];
+  if (farmsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
+  if (farms.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to CropSynth!</h2>
+        <p className="text-gray-600 mb-6">Get started by creating your first farm.</p>
+        <a
+          href="/farm/create"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+        >
+          Create Your First Farm
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -88,7 +82,7 @@ export function Dashboard({ farms, user }: DashboardProps) {
             Select Farm
           </label>
           <select
-            value={selectedFarmId}
+            value={selectedFarmId || ''}
             onChange={(e) => setSelectedFarmId(e.target.value)}
             className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             aria-label="Select Farm"
@@ -104,12 +98,30 @@ export function Dashboard({ farms, user }: DashboardProps) {
 
       {/* Welcome Message */}
       <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-lg shadow-lg text-white p-6">
-        <h2 className="text-2xl font-bold mb-2">
-          Welcome back, {user?.name || user?.email?.split('@')[0] || 'Farmer'}! 👋
-        </h2>
-        <p className="text-green-100">
-          Managing <strong>{selectedFarm?.farm_name || 'No Farm Selected'}</strong> in {selectedFarm?.location?.village || 'Unknown'}, {selectedFarm?.location?.district || 'Unknown'}
-        </p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">
+              Welcome back, {user?.name || user?.email?.split('@')[0] || 'Farmer'}! 👋
+            </h2>
+            <p className="text-green-100">
+              Managing <strong>{selectedFarm?.farm_name || 'No Farm Selected'}</strong> in {selectedFarm?.location?.village || 'Unknown'}, {selectedFarm?.location?.district || 'Unknown'}
+            </p>
+          </div>
+          {selectedFarm && (
+            <EditFarmForm
+              farm={{
+                id: selectedFarm.id,
+                farm_name: selectedFarm.farm_name,
+                land_size_acres: selectedFarm.land_size_acres,
+                soil_type: selectedFarm.soil_type,
+                irrigation_type: selectedFarm.irrigation_type,
+                primary_crops: selectedFarm.primary_crops,
+                location: selectedFarm.location
+              }}
+              onUpdate={refreshFarms}
+            />
+          )}
+        </div>
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="bg-white/20 rounded-lg p-3">
             <div className="font-semibold">Farm Size</div>
@@ -142,61 +154,19 @@ export function Dashboard({ farms, user }: DashboardProps) {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap flex items-center space-x-2 ${
-                  activeTab === tab.id
-                    ? "border-green-500 text-green-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div className="p-6">
-          {activeTab === "overview" && selectedFarm && (
-            <FarmOverview
-              farm={{
-                ...selectedFarm,
-                soil_type: selectedFarm.soil_type || 'Unknown',
-                irrigation_type: selectedFarm.irrigation_type || 'Unknown'
-              }}
-              stats={farmStats || { totalActivities: 0, monthlyExpenses: 0, healthRecords: 0, recentActivities: [] }}
-            />
-          )}
-          {activeTab === "chat" && (
-            <ChatBot farmId={selectedFarmId} />
-          )}
-          {activeTab === "weather" && selectedFarm && (
-            <WeatherDashboard
-              farm={{
-                ...selectedFarm,
-                soil_type: selectedFarm.soil_type || 'Unknown',
-                irrigation_type: selectedFarm.irrigation_type || 'Unknown'
-              }}
-            />
-          )}
-          {activeTab === "activities" && (
-            <ActivityLogger farmId={selectedFarmId} />
-          )}
-          {activeTab === "expenses" && (
-            <ExpenseTracker farmId={selectedFarmId} />
-          )}
-          {activeTab === "health" && (
-            <CropDoctor farmId={selectedFarmId} />
-          )}
-        </div>
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        {selectedFarm && (
+          <FarmOverview
+            farm={{
+              ...selectedFarm,
+              soil_type: selectedFarm.soil_type || 'Unknown',
+              irrigation_type: selectedFarm.irrigation_type || 'Unknown'
+            }}
+            stats={farmStats || { totalActivities: 0, monthlyExpenses: 0, healthRecords: 0, recentActivities: [] }}
+            onFarmUpdate={refreshFarms}
+          />
+        )}
       </div>
     </div>
   );

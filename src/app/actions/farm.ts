@@ -11,11 +11,14 @@ const FarmSchema = z.object({
   soil_type: z.string().optional(),
   irrigation_type: z.string().optional(),
   primary_crops: z.string().optional(),
+  district: z.string().min(1, 'District is required'),
+  village: z.string().min(1, 'Village is required'),
 })
 
 export type FormState = {
   message: string;
   errors?: Record<string, string[] | undefined>;
+  farmId?: string;
 }
 
 export async function createFarm(prevState: FormState, formData: FormData): Promise<FormState> {
@@ -32,34 +35,40 @@ export async function createFarm(prevState: FormState, formData: FormData): Prom
     soil_type: formData.get('soil_type'),
     irrigation_type: formData.get('irrigation_type'),
     primary_crops: formData.get('primary_crops'),
+    district: formData.get('district'),
+    village: formData.get('village'),
   })
 
   if (!validatedFields.success) {
+    console.error('Validation failed:', validatedFields.error.flatten().fieldErrors)
     return {
       message: 'Validation failed',
       errors: validatedFields.error.flatten().fieldErrors,
     }
   }
 
-  const { farm_name, land_size_acres, soil_type, irrigation_type, primary_crops } = validatedFields.data
+  const { farm_name, land_size_acres, soil_type, irrigation_type, primary_crops, district, village } = validatedFields.data
 
-  const { error } = await supabase.from('farms').insert({
+  console.log('Creating farm with data:', { farm_name, land_size_acres, soil_type, irrigation_type, primary_crops, district, village })
+
+  const { data, error } = await supabase.from('farms').insert({
     user_id: user.id,
     farm_name,
     land_size_acres,
     soil_type,
     irrigation_type,
     primary_crops: primary_crops ? primary_crops.split(',').map(s => s.trim()) : [],
-    // TODO: Add location data later
-  })
+    location: { district, village },
+  }).select().single()
 
   if (error) {
     console.error('Database Error:', error)
     return { message: 'Database error: Could not create farm.', errors: { db: [error.message] } }
   }
 
-  revalidatePath('/dashboard')
-  redirect('/dashboard')
+  console.log('Farm created successfully:', data)
+  // Note: Removed revalidatePath as it might interfere with client-side state updates
+  return { message: 'Farm created successfully!', farmId: data.id }
 }
 
 export async function getUserFarms() {

@@ -17,10 +17,13 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
+import { useFarm } from "@/components/FarmContext"
+import { ChevronDown, Plus } from "lucide-react"
 
 export function UserNav({ user }: { user: User }) {
   const router = useRouter()
   const supabase = createClient()
+  const { farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading } = useFarm()
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -28,30 +31,78 @@ export function UserNav({ user }: { user: User }) {
     router.refresh() // To ensure the layout re-renders and redirects
   }
 
+  const handleFarmSelect = (farmId: string) => {
+    setSelectedFarmId(farmId)
+  }
+
+  const handleAddFarm = () => {
+    router.push('/farm/create')
+  }
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'User avatar'} />
-            <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.user_metadata.full_name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
-          Log out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center space-x-4">
+      {/* Farm Selector */}
+      {farms.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center space-x-2">
+              <span className="text-sm">
+                {loading ? 'Loading...' : selectedFarm?.farm_name || 'Select Farm'}
+              </span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end">
+            <DropdownMenuLabel>Your Farms</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {farms.map((farm) => (
+              <DropdownMenuItem
+                key={farm.id}
+                onClick={() => handleFarmSelect(farm.id)}
+                className={selectedFarmId === farm.id ? 'bg-accent' : ''}
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium">{farm.farm_name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {farm.location?.village}, {farm.location?.district}
+                  </span>
+                </div>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleAddFarm}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Farm
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
+      {/* User Menu */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'User avatar'} />
+              <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.user_metadata.full_name}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>
+            Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }
