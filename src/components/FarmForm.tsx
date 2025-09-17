@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import TranslatableText from "./TranslatableText";
 
 const KERALA_DISTRICTS = [
   "Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam",
@@ -68,7 +69,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
     if (!formData.farmName || !formData.district || !formData.village ||
         !formData.landSizeAcres || !formData.soilType || !formData.irrigationType ||
         formData.primaryCrops.length === 0) {
-      toast.error("Please fill in all required fields");
+      toast.error(<TranslatableText text="Please fill in all required fields" />);
       return;
     }
 
@@ -129,14 +130,14 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
       <div className="mb-6">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-600">
-          {isEdit ? 'Update your farm information.' : 'Tell us about your farm to get personalized advice and recommendations.'}
+          <TranslatableText text={isEdit ? 'Update your farm information.' : 'Tell us about your farm to get personalized advice and recommendations.'} />
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Farm Name */}
         <div>
-          <Label htmlFor="farm_name">Farm Name *</Label>
+          <Label htmlFor="farm_name"><TranslatableText text="Farm Name" /> *</Label>
           <Input
             id="farm_name"
             type="text"
@@ -150,7 +151,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
         {/* Location */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="district">District *</Label>
+            <Label htmlFor="district"><TranslatableText text="District" /> *</Label>
             <Select value={formData.district} onValueChange={(value) => setFormData(prev => ({ ...prev, district: value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select District" />
@@ -164,7 +165,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
           </div>
 
           <div>
-            <Label htmlFor="village">Village/Town *</Label>
+            <Label htmlFor="village"><TranslatableText text="Village/Town" /> *</Label>
             <Input
               id="village"
               type="text"
@@ -178,7 +179,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
 
         {/* Land Size */}
         <div>
-          <Label htmlFor="land_size_acres">Land Size (in acres) *</Label>
+          <Label htmlFor="land_size_acres"><TranslatableText text="Land Size (in acres)" /> *</Label>
           <Input
             id="land_size_acres"
             type="number"
@@ -194,7 +195,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
         {/* Soil Type and Irrigation */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="soil_type">Soil Type *</Label>
+            <Label htmlFor="soil_type"><TranslatableText text="Soil Type" /> *</Label>
             <Select value={formData.soilType} onValueChange={(value) => setFormData(prev => ({ ...prev, soilType: value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select Soil Type" />
@@ -208,7 +209,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
           </div>
 
           <div>
-            <Label htmlFor="irrigation_type">Irrigation Type *</Label>
+            <Label htmlFor="irrigation_type"><TranslatableText text="Irrigation Type" /> *</Label>
             <Select value={formData.irrigationType} onValueChange={(value) => setFormData(prev => ({ ...prev, irrigationType: value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select Irrigation Type" />
@@ -224,7 +225,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
 
         {/* Primary Crops */}
         <div>
-          <Label>Primary Crops * (Select all that apply)</Label>
+          <Label><TranslatableText text="Primary Crops" /> * (<TranslatableText text="Select all that apply" />)</Label>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
             {COMMON_CROPS.map(crop => (
               <label
@@ -247,7 +248,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
           </div>
           {formData.primaryCrops.length > 0 && (
             <p className="mt-2 text-sm text-green-600">
-              Selected: {formData.primaryCrops.join(", ")}
+              <TranslatableText text="Selected" />: {formData.primaryCrops.join(", ")}
             </p>
           )}
         </div>
@@ -262,7 +263,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
             {isSubmitting ? (
               <div className="flex items-center justify-center space-x-2">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>{isEdit ? 'Updating...' : 'Creating...'}</span>
+                <span><TranslatableText text={isEdit ? 'Updating...' : 'Creating...'} /></span>
               </div>
             ) : (
               submitText

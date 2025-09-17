@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { FarmForm } from './FarmForm'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import TranslatableText from './TranslatableText'
 
 interface EditFarmFormProps {
   farm: {
@@ -29,7 +30,7 @@ export function EditFarmForm({ farm, onUpdate }: EditFarmFormProps) {
         onClick={() => setIsEditing(true)}
         className="bg-white text-gray-900 hover:bg-gray-100 border border-gray-300"
       >
-        Edit Farm
+        <TranslatableText text="Edit Farm" />
       </Button>
     )
   }
@@ -49,7 +50,7 @@ export function EditFarmForm({ farm, onUpdate }: EditFarmFormProps) {
               <div>
                 <CardTitle>Edit Farm Details</CardTitle>
                 <CardDescription>
-                  Update your farm information including crops and land size.
+                  <TranslatableText text="Update your farm information including crops and land size." />
                 </CardDescription>
               </div>
               <Button

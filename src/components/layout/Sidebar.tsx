@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bot, Sun, DollarSign, Activity, Award, Home, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import TranslatableText from '../TranslatableText'
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: Home },
@@ -23,7 +24,7 @@ export default function Sidebar() {
       <div className="flex flex-col space-y-4">
         <Link href="/dashboard" className="mb-8 flex items-center space-x-2">
           <Bot className="h-8 w-8 text-green-600" />
-          <span className="text-2xl font-bold text-green-600">Crop-Synth</span>
+          <span className="text-2xl font-bold text-green-600"><TranslatableText text="Crop-Synth" /></span>
         </Link>
         <nav className="flex-1">
           <ul className="space-y-1">
@@ -39,7 +40,7 @@ export default function Sidebar() {
                   )}
                 >
                   <item.icon className="h-5 w-5" />
-                  <span>{item.label}</span>
+                  <TranslatableText text={item.label} />
                 </Link>
               </li>
             ))}

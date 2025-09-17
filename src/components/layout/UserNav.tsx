@@ -19,6 +19,7 @@ import { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
 import { useFarm } from "@/components/FarmContext"
 import { ChevronDown, Plus } from "lucide-react"
+import TranslatableText from '../TranslatableText'
 
 export function UserNav({ user }: { user: User }) {
   const router = useRouter()
@@ -47,13 +48,13 @@ export function UserNav({ user }: { user: User }) {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="flex items-center space-x-2">
               <span className="text-sm">
-                {loading ? 'Loading...' : selectedFarm?.farm_name || 'Select Farm'}
+                {loading ? <TranslatableText text="Loading..." /> : (selectedFarm?.farm_name || <TranslatableText text="Select Farm" />)}
               </span>
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end">
-            <DropdownMenuLabel>Your Farms</DropdownMenuLabel>
+            <DropdownMenuLabel><TranslatableText text="Your Farms" /></DropdownMenuLabel>
             <DropdownMenuSeparator />
             {farms.map((farm) => (
               <DropdownMenuItem
@@ -72,7 +73,7 @@ export function UserNav({ user }: { user: User }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleAddFarm}>
               <Plus className="h-4 w-4 mr-2" />
-              Add New Farm
+              <TranslatableText text="Add New Farm" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -99,7 +100,7 @@ export function UserNav({ user }: { user: User }) {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
-            Log out
+            <TranslatableText text="Log out" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

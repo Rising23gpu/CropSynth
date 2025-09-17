@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useFarm } from '@/components/FarmContext'
 import { useRouter } from 'next/navigation'
+import TranslatableText from '@/components/TranslatableText'
 
 export default function CreateFarmPage() {
   const [state, setState] = useState<FormState>({ message: '', errors: {} })
@@ -71,15 +72,15 @@ export default function CreateFarmPage() {
     <div className="max-w-2xl mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Create Your Farm Profile</CardTitle>
+          <CardTitle><TranslatableText text="Create Your Farm Profile" /></CardTitle>
           <CardDescription>
-            Provide some basic details about your farm to get started.
+            <TranslatableText text="Provide some basic details about your farm to get started." />
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="farm_name">Farm Name *</Label>
+              <Label htmlFor="farm_name"><TranslatableText text="Farm Name" /> *</Label>
               <Input
                 id="farm_name"
                 name="farm_name"
@@ -92,7 +93,7 @@ export default function CreateFarmPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="land_size_acres">Land Size (in acres) *</Label>
+              <Label htmlFor="land_size_acres"><TranslatableText text="Land Size (in acres)" /> *</Label>
               <Input
                 id="land_size_acres"
                 name="land_size_acres"
@@ -107,7 +108,7 @@ export default function CreateFarmPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="soil_type">Soil Type</Label>
+              <Label htmlFor="soil_type"><TranslatableText text="Soil Type" /></Label>
               <Select value={formData.soil_type} onValueChange={(value) => handleInputChange('soil_type', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a soil type" />
@@ -123,7 +124,7 @@ export default function CreateFarmPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="irrigation_type">Irrigation Type</Label>
+              <Label htmlFor="irrigation_type"><TranslatableText text="Irrigation Type" /></Label>
               <Select value={formData.irrigation_type} onValueChange={(value) => handleInputChange('irrigation_type', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select an irrigation type" />
@@ -139,7 +140,7 @@ export default function CreateFarmPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="primary_crops">Primary Crops (comma-separated)</Label>
+              <Label htmlFor="primary_crops"><TranslatableText text="Primary Crops (comma-separated)" /></Label>
               <Input
                 id="primary_crops"
                 name="primary_crops"
@@ -150,7 +151,7 @@ export default function CreateFarmPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="district">District *</Label>
+              <Label htmlFor="district"><TranslatableText text="District" /> *</Label>
               <Input
                 id="district"
                 name="district"
@@ -163,7 +164,7 @@ export default function CreateFarmPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="village">Village *</Label>
+              <Label htmlFor="village"><TranslatableText text="Village" /> *</Label>
               <Input
                 id="village"
                 name="village"
@@ -176,7 +177,7 @@ export default function CreateFarmPage() {
             </div>
 
             <Button type="submit" disabled={pending} className="w-full">
-              {pending ? 'Creating Farm...' : 'Create Farm'}
+              {pending ? <TranslatableText text="Creating Farm..." /> : <TranslatableText text="Create Farm" />}
             </Button>
 
             {state.message && !state.errors && <p className="text-sm text-green-500 mt-2">{state.message}</p>}
