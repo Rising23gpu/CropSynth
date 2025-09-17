@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 const KERALA_DISTRICTS = [
   "Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam",
@@ -67,7 +68,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
     if (!formData.farmName || !formData.district || !formData.village ||
         !formData.landSizeAcres || !formData.soilType || !formData.irrigationType ||
         formData.primaryCrops.length === 0) {
-      alert("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -85,7 +86,7 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
           primary_crops: formData.primaryCrops,
         };
         await updateFarm(farm.id, updates);
-        alert('Farm updated successfully!');
+        toast.success('Farm updated successfully!');
         onSuccess?.();
       } else {
         // For create, use FormData
@@ -100,15 +101,15 @@ export function FarmForm({ isEdit = false, farm, title, submitText, onSuccess }:
 
         const result = await createFarm({ message: '', errors: {} }, formDataToSend);
         if (result.errors) {
-          alert(result.message || 'Failed to create farm');
+          toast.error(result.message || 'Failed to create farm');
         } else {
-          alert('Farm created successfully!');
+          toast.success('Farm created successfully!');
           onSuccess?.();
         }
       }
     } catch (error) {
       console.error("Error saving farm:", error);
-      alert("Failed to save farm. Please try again.");
+      toast.error("Failed to save farm. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

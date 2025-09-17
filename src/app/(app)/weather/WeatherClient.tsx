@@ -1,32 +1,41 @@
 "use client";
 
-import { useState } from "react";
 import { WeatherDashboard } from '@/components/WeatherDashboard'
+import { useFarm } from '@/components/FarmContext'
 
-interface Farm {
-  id: string;
-  farm_name: string;
-  location: {
-    village: string;
-    district: string;
-  };
-  land_size_acres: number;
-  soil_type?: string;
-  irrigation_type?: string;
-  primary_crops: string[];
-}
+export default function WeatherClient() {
+  const { farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading } = useFarm()
 
-interface WeatherClientProps {
-  farms: Farm[];
-}
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
-export default function WeatherClient({ farms }: WeatherClientProps) {
-  const [selectedFarmId, setSelectedFarmId] = useState<string>(farms.length > 0 ? farms[0].id : "");
-
-  const selectedFarm = farms.find(farm => farm.id === selectedFarmId);
+  if (farms.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">No Farms Found</h2>
+        <p className="text-gray-600 mb-6">You need to create a farm first to view weather information.</p>
+        <a
+          href="/farm/create"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+        >
+          Create Your First Farm
+        </a>
+      </div>
+    );
+  }
 
   if (!selectedFarm) {
-    return <div>No farm selected</div>;
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">No Farm Selected</h2>
+        <p className="text-gray-600">Please select a farm to view weather information.</p>
+      </div>
+    );
   }
 
   return (
@@ -39,7 +48,7 @@ export default function WeatherClient({ farms }: WeatherClientProps) {
               Select Farm
             </label>
             <select
-              value={selectedFarmId}
+              value={selectedFarmId || ''}
               onChange={(e) => setSelectedFarmId(e.target.value)}
               className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               aria-label="Select Farm"

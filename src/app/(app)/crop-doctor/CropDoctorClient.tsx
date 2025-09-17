@@ -1,23 +1,33 @@
 "use client";
 
-import { useState } from "react";
 import { CropDoctor } from '@/components/CropDoctor'
+import { useFarm } from '@/components/FarmContext'
 
-interface Farm {
-  id: string;
-  farm_name: string;
-  location: {
-    village: string;
-    district: string;
-  };
-}
+export default function CropDoctorClient() {
+  const { farms, selectedFarmId, setSelectedFarmId, loading } = useFarm()
 
-interface CropDoctorClientProps {
-  farms: Farm[];
-}
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
-export default function CropDoctorClient({ farms }: CropDoctorClientProps) {
-  const [selectedFarmId, setSelectedFarmId] = useState<string>(farms.length > 0 ? farms[0].id : "");
+  if (farms.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">No Farms Found</h2>
+        <p className="text-gray-600 mb-6">You need to create a farm first to use the crop doctor.</p>
+        <a
+          href="/farm/create"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+        >
+          Create Your First Farm
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -29,7 +39,7 @@ export default function CropDoctorClient({ farms }: CropDoctorClientProps) {
               Select Farm
             </label>
             <select
-              value={selectedFarmId}
+              value={selectedFarmId || ''}
               onChange={(e) => setSelectedFarmId(e.target.value)}
               className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               aria-label="Select Farm"
@@ -44,7 +54,7 @@ export default function CropDoctorClient({ farms }: CropDoctorClientProps) {
         )}
 
         {/* CropDoctor Component */}
-        <CropDoctor farmId={selectedFarmId} />
+        {selectedFarmId && <CropDoctor farmId={selectedFarmId} />}
       </div>
     </div>
   );

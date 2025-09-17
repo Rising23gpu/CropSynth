@@ -23,15 +23,26 @@ export function EditFarmForm({ farm, onUpdate }: EditFarmFormProps) {
 
   if (!isEditing) {
     return (
-      <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+      <Button
+        variant="default"
+        size="sm"
+        onClick={() => setIsEditing(true)}
+        className="bg-white text-gray-900 hover:bg-gray-100 border border-gray-300"
+      >
         Edit Farm
       </Button>
     )
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="max-w-2xl w-full mx-4">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 p-4"
+      onClick={() => setIsEditing(false)}
+    >
+      <div
+        className="max-w-md w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -41,7 +52,14 @@ export function EditFarmForm({ farm, onUpdate }: EditFarmFormProps) {
                   Update your farm information including crops and land size.
                 </CardDescription>
               </div>
-              <Button variant="ghost" onClick={() => setIsEditing(false)}>×</Button>
+              <Button
+                variant="ghost"
+                onClick={() => setIsEditing(false)}
+                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                size="sm"
+              >
+                ✕
+              </Button>
             </div>
           </CardHeader>
           <CardContent>

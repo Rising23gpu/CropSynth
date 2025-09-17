@@ -18,6 +18,7 @@ const FarmSchema = z.object({
 export type FormState = {
   message: string;
   errors?: Record<string, string[] | undefined>;
+  farmId?: string;
 }
 
 export async function createFarm(prevState: FormState, formData: FormData): Promise<FormState> {
@@ -39,6 +40,7 @@ export async function createFarm(prevState: FormState, formData: FormData): Prom
   })
 
   if (!validatedFields.success) {
+    console.error('Validation failed:', validatedFields.error.flatten().fieldErrors)
     return {
       message: 'Validation failed',
       errors: validatedFields.error.flatten().fieldErrors,
@@ -47,7 +49,9 @@ export async function createFarm(prevState: FormState, formData: FormData): Prom
 
   const { farm_name, land_size_acres, soil_type, irrigation_type, primary_crops, district, village } = validatedFields.data
 
-  const { error } = await supabase.from('farms').insert({
+  console.log('Creating farm with data:', { farm_name, land_size_acres, soil_type, irrigation_type, primary_crops, district, village })
+
+  const { data, error } = await supabase.from('farms').insert({
     user_id: user.id,
     farm_name,
     land_size_acres,
@@ -55,15 +59,16 @@ export async function createFarm(prevState: FormState, formData: FormData): Prom
     irrigation_type,
     primary_crops: primary_crops ? primary_crops.split(',').map(s => s.trim()) : [],
     location: { district, village },
-  })
+  }).select().single()
 
   if (error) {
     console.error('Database Error:', error)
     return { message: 'Database error: Could not create farm.', errors: { db: [error.message] } }
   }
 
-  revalidatePath('/dashboard')
-  redirect('/dashboard')
+  console.log('Farm created successfully:', data)
+  // Note: Removed revalidatePath as it might interfere with client-side state updates
+  return { message: 'Farm created successfully!', farmId: data.id }
 }
 
 export async function getUserFarms() {
