@@ -90,19 +90,46 @@ export function ChatBot({ farmId }: ChatBotProps) {
     setIsLoading(true);
 
     try {
-      // Simulate AI response (replace with actual API call when ready)
-      setTimeout(() => {
-        const aiResponse: Message = {
-          role: 'assistant',
-          content: "I'm a farming assistant! This is a placeholder response. The full AI integration will be available once API keys are configured.",
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        setIsLoading(false);
-      }, 1000);
+      // Prepare messages for API call
+      const chatMessages = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      chatMessages.push({
+        role: 'user',
+        content: input
+      });
+
+      // Call the API route
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: chatMessages,
+          farmContext: farmId ? `Farm ID: ${farmId}` : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const data = await response.json();
+
+      const aiResponse: Message = {
+        role: 'assistant',
+        content: data.response,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Failed to send message. Please try again.");
+      toast.error("Failed to get AI response. Please try again.");
+      setIsLoading(false);
+    } finally {
       setIsLoading(false);
     }
   };

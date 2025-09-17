@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface WeatherDashboardProps {
   farm: {
@@ -38,17 +38,98 @@ export function WeatherDashboard({ farm }: WeatherDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchWeatherData();
-  }, [farm]);
-
-  const fetchWeatherData = async () => {
+  const fetchWeatherDataFromAPI = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // For demo purposes, we'll use mock data
-      // In production, you would integrate with OpenWeatherMap API
+      // Get coordinates from farm location
+      let locationString = 'Kottayam, Kerala, India'; // Default fallback - major agricultural district in Kerala
+      let usingFallbackLocation = true;
+
+      if (farm.location) {
+        if (farm.location.village && farm.location.district) {
+          locationString = `${farm.location.village}, ${farm.location.district}, India`;
+          usingFallbackLocation = false;
+        } else if (farm.location.district) {
+          locationString = `${farm.location.district}, India`;
+          usingFallbackLocation = false;
+        } else if (farm.location.village) {
+          locationString = `${farm.location.village}, India`;
+          usingFallbackLocation = false;
+        }
+      }
+
+      console.log('Fetching weather for location:', locationString);
+      console.log('Using fallback location:', usingFallbackLocation);
+      console.log('Farm location data:', farm.location);
+
+      // Try multiple location formats if the first one fails
+      const locationAttempts = [
+        locationString,
+        farm.location?.district ? `${farm.location.district}, India` : null,
+        'Kottayam, Kerala, India' // Final fallback - major agricultural district in Kerala
+      ].filter(Boolean) as string[];
+
+      let coordinates = null;
+      let lastError = null;
+
+      for (const attemptLocation of locationAttempts) {
+        try {
+          console.log('Trying location:', attemptLocation);
+
+          const geocodeResponse = await fetch('/api/geocode', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ location: attemptLocation }),
+          });
+
+          if (geocodeResponse.ok) {
+            coordinates = await geocodeResponse.json();
+            console.log('Successfully got coordinates:', coordinates);
+            break;
+          } else {
+            const errorData = await geocodeResponse.json().catch(() => ({ error: 'Unknown error' }));
+            lastError = `Geocoding failed for ${attemptLocation}: ${errorData.error || geocodeResponse.status}`;
+            console.warn(lastError);
+          }
+        } catch (error) {
+          lastError = `Error geocoding ${attemptLocation}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          console.warn(lastError);
+        }
+      }
+
+      if (!coordinates) {
+        throw new Error(lastError || 'Failed to get coordinates for any location');
+      }
+
+      // Call weather API
+      const weatherResponse = await fetch('/api/weather', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          latitude: coordinates.lat,
+          longitude: coordinates.lon,
+        }),
+      });
+
+      if (!weatherResponse.ok) {
+        const errorData = await weatherResponse.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`Weather API failed: ${errorData.error || weatherResponse.status}`);
+      }
+
+      const realWeatherData = await weatherResponse.json();
+
+      setWeatherData(realWeatherData);
+    } catch (err) {
+      console.error("Weather fetch error:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch weather data");
+
+      // Fallback to mock data if API fails
       const mockWeatherData: WeatherData = {
         current: {
           temperature: 28,
@@ -101,16 +182,16 @@ export function WeatherDashboard({ farm }: WeatherDashboardProps) {
         ],
       };
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
       setWeatherData(mockWeatherData);
-    } catch (err) {
-      setError("Failed to fetch weather data");
-      console.error("Weather fetch error:", err);
+      setError("Using demo weather data - API integration failed");
     } finally {
       setLoading(false);
     }
-  };
+  }, [farm]);
+
+  useEffect(() => {
+    fetchWeatherDataFromAPI();
+  }, [fetchWeatherDataFromAPI]);
 
   const getWeatherIcon = (description: string) => {
     const desc = description.toLowerCase();
@@ -161,7 +242,7 @@ export function WeatherDashboard({ farm }: WeatherDashboardProps) {
         <div className="text-4xl mb-4">⚠️</div>
         <p className="text-red-600 mb-4">{error}</p>
         <button
-          onClick={fetchWeatherData}
+          onClick={fetchWeatherDataFromAPI}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
           Retry
@@ -182,7 +263,7 @@ export function WeatherDashboard({ farm }: WeatherDashboardProps) {
           <div>
             <h3 className="text-xl font-bold">Current Weather</h3>
             <p className="text-blue-100">
-              {farm.location ? `${farm.location.village}, ${farm.location.district}` : 'Location not set'}
+              {farm.location ? `${farm.location.village}, ${farm.location.district}` : 'Kottayam, Kerala'}
             </p>
           </div>
           <div className="text-4xl">
@@ -309,8 +390,7 @@ export function WeatherDashboard({ farm }: WeatherDashboardProps) {
       {/* Weather Data Disclaimer */}
       <div className="bg-gray-50 rounded-lg p-4">
         <p className="text-sm text-gray-600 text-center">
-          <span className="font-medium">Note:</span> This is demo weather data for UI demonstration.
-          In production, integrate with OpenWeatherMap API or similar service for real weather data.
+          <span className="font-medium">Weather data powered by WeatherAPI.com.</span> Real-time weather information for better farming decisions.
         </p>
       </div>
     </div>

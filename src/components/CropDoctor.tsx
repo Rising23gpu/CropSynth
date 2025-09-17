@@ -45,7 +45,6 @@ export function CropDoctor({ farmId }: CropDoctorProps) {
   });
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchHealthRecords = async () => {
@@ -54,8 +53,6 @@ export function CropDoctor({ farmId }: CropDoctorProps) {
         setHealthRecords(records);
       } catch (error) {
         console.error('Failed to fetch health records:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -82,19 +79,24 @@ export function CropDoctor({ farmId }: CropDoctorProps) {
     setIsAnalyzing(true);
 
     try {
-      // For demo purposes, we'll simulate AI analysis with mock data
-      // In production, you would upload images and call a real AI service
-      const mockDiagnosis = {
-        disease: "Leaf Spot Disease",
-        confidence: 0.85,
-        description: "Common fungal infection affecting leaves, causing brown spots with yellow halos.",
-        treatments: {
-          organic: ["Neem oil spray", "Copper fungicide", "Remove affected leaves"],
-          chemical: ["Mancozeb spray", "Propiconazole treatment"],
-          preventive: ["Improve air circulation", "Avoid overhead watering", "Crop rotation"],
+      // Call the API route for crop analysis
+      const response = await fetch('/api/crop-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        severity: "medium" as const,
-      };
+        body: JSON.stringify({
+          symptoms: formData.symptoms,
+          cropName: formData.cropName,
+          farmContext: `Farm ID: ${farmId}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze crop');
+      }
+
+      const mockDiagnosis = await response.json();
 
       // Simulate image URLs (in production, these would be actual uploaded image URLs)
       const mockImageUrls = selectedImages.map((_, index) =>
